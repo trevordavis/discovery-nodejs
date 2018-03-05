@@ -18,12 +18,21 @@ export default class TopStories extends Component {
     }).isRequired,
   }
 
+  static parseHTML(htmlString) {
+    var start_index = htmlString.indexOf("https://");
+    var end_index = htmlString.indexOf(".htm") + 4;
+    var url = htmlString.substring(start_index, end_index);
+    console.log("printing the url");
+    console.log(url);
+    return url;
+  }
+
   static widgetTitle() {
-    return 'Top Stories';
+    return 'Top Books';
   }
 
   static widgetDescription() {
-    return 'Discovery can pull a list of the most recent and relevant news articles about this company.';
+    return 'Watson Book Catalogue searches free, popular items from Project Gutenberg to find the books most relevant to your search.';
   }
 
   state = {
@@ -57,11 +66,10 @@ export default class TopStories extends Component {
                     stories.map(item =>
                       (<Story
                         key={item.id}
-                        title={(item[fields.title] || 'Untitled')}
-                        url={item[fields.url]}
-                        host={item[fields.host]}
-                        date={item[fields.publication_date]}
-                        score={item.score}
+                        title={(item.extracted_metadata.title || 'Untitled')}
+                        author={item.extracted_metadata.author}
+                        score={item.result_metadata.score}
+                        url={TopStories.parseHTML(item.html)}
                       />))
                   }
                 </div>

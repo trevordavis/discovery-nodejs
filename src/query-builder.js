@@ -41,7 +41,9 @@ module.exports = {
       // eslint-disable-next-line comma-dangle
       AnomalyDetectionQuery.aggregations
     );
-    params.aggregation = `[${allWidgetAggregations.join(',')}]`;
+    // params.aggregation = `[${allWidgetAggregations.join(',')}]`;
+    params.aggregation = null;
+    params.filter = null;
     // add in TopStoriesQuery since it is the only one without aggregations
     return Object.assign({}, params, TopStoriesQuery);
   },

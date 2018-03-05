@@ -9,21 +9,16 @@ function SentimentBySource({ sentiments }) {
         <div className="sentiment--sources-table">
           {
             sentiments.map(source =>
-              (<div key={source.key} className="sentiment--source">
+              (<div key={source.title} className="sentiment--source">
                 <div
                   className="sentiment--source-cell sentiment--source-name"
                 >
-                  { source.key }
+                  { source.title }
                 </div>
                 <div
                   className="sentiment--source-cell sentiment--source-summary"
                 >
-                  { source.aggregations[0].results[0].key }
-                </div>
-                <div
-                  className="sentiment--source-cell sentiment--source-chart"
-                >
-                  <SentimentChart sentiment={source.aggregations[0]} />
+                  { source.sentiment_label } { source.sentiment_score }
                 </div>
               </div>),
             )
@@ -36,12 +31,9 @@ function SentimentBySource({ sentiments }) {
 
 SentimentBySource.propTypes = {
   sentiments: arrayOf(shape({
-    key: string.isRequired,
-    aggregations: arrayOf(shape({
-      results: arrayOf(shape({
-        key: string.isRequired,
-      })).isRequired,
-    })).isRequired,
+    title: string.isRequired,
+    label: string.isRequired,
+    score: string.isRequired
   })).isRequired,
 };
 

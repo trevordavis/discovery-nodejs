@@ -1,7 +1,7 @@
 const queryBuilder = require('./src/query-builder');
 
-const NEWS_ENVIRONMENT_ID = 'system';
-const NEWS_COLLECTION_ID = 'news';
+const NEWS_ENVIRONMENT_ID = '2d733f0f-ffcd-4b29-ac16-41f677a0732d';
+const NEWS_COLLECTION_ID = 'ce6bb4be-278f-49c8-9927-0c5dfb530b6e';
 
 const DiscoveryV1 = require('watson-developer-cloud/discovery/v1');
 
@@ -50,6 +50,10 @@ function getWidgetQuery(request) {
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
+
+// app.get('/api', (req, res) => {
+//   res.send("hi");
+// });
 
 // setup query endpoint for news
 app.post('/api/query', (req, res, next) => {

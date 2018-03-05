@@ -1,5 +1,6 @@
 module.exports.fields = {
-  title: 'title',
+  title: 'extracted_metadata.title',
+  author: 'extracted_metadata.author',
   url: 'url',
   host: 'host',
   publication_date: 'crawl_date',

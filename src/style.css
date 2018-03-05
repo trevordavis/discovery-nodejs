@@ -1004,7 +1004,7 @@ html {
     width: 32rem !important;
   }
   .query--text-input-container {
-    width: 48.93617%;
+    width: 98.93617%;
     margin-right: 2.12766%;
     float: left;
   }
@@ -1018,6 +1018,7 @@ html {
   .query_collapsed .text-input--input {
     font-size: 1.25em;
     padding-bottom: 0.75rem;
+    text-align: center
   }
   .query_collapsed .text-input--dummy {
     font-size: 1.25em;
@@ -1175,7 +1176,7 @@ html {
   font-size: 0.7em;
   color: #5A5A5A;
   font-weight: 300;
-  margin-top: 1rem;
+  margin-top: 0.25rem;
   margin-bottom: 0.5rem;
 }
 
@@ -1832,7 +1833,7 @@ input:focus, button:focus, textarea:focus {
   align-items: flex-end;
 }
 .query--flex-container .query--text-input-container {
-  width: 40%;
+  width: 90%;
 }
 
 .query--flex-container .query--date-buttons-container {

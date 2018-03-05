@@ -17,59 +17,10 @@ export default class Collapsed extends Component {
   }
 
   state = {
-    startDate: moment(this.props.query.date.from),
-    endDate: moment(this.props.query.date.to),
     query: Object.assign({}, this.props.query, {
       enabled: this.props.query.text.length > 0,
-    }),
-    restrictedDateRange: false,
-    dateButtons: [
-      {
-        value: 'lastweek',
-        id: 'rb-1',
-        text: 'Last Week',
-        startDate: moment().subtract(1, 'w'),
-        endDate: moment(),
-      },
-      {
-        value: 'lasttwoweeks',
-        id: 'rb-2',
-        text: 'Last 2 Weeks',
-        startDate: moment().subtract(2, 'w'),
-        endDate: moment(),
-      },
-      {
-        value: 'lastmonth',
-        id: 'rb-3',
-        text: 'Last Month',
-        startDate: moment().subtract(30, 'd'),
-        endDate: moment(),
-      },
-      {
-        value: 'lasttwomonths',
-        id: 'rb-4',
-        text: 'Last 2 Months',
-        selected: true,
-        startDate: moment().subtract(60, 'd'),
-        endDate: moment(),
-      },
-    ],
+    })
   }
-
-  onDatesChange = () => {
-    this.props.onQueryChange({
-      text: this.state.query.text,
-      date: {
-        from: this.state.startDate.format('YYYYMMDD'),
-        to: this.state.endDate.format('YYYYMMDD'),
-      },
-      restrictedDateRange: this.state.restrictedDateRange,
-    });
-  }
-
-  buttonState = () => (this.state.query.enabled ?
-    ('query--date-buttons-container') :
-    ('query--date-buttons-disabled query--date-buttons-container'))
 
   handleInputChange = (event) => {
     const value = event.target.value;
@@ -85,12 +36,7 @@ export default class Collapsed extends Component {
   handleKeyPress = (event) => {
     if (event.key === 'Enter' && event.target.value.match(/[^\s]+/)) {
       this.props.onQueryChange({
-        text: this.state.query.text,
-        date: {
-          from: this.state.startDate.format('YYYYMMDD'),
-          to: this.state.endDate.format('YYYYMMDD'),
-        },
-        restrictedDateRange: this.state.restrictedDateRange,
+        text: "&natural_language_query=" + this.state.query.text.replace(" ", "%")
       });
     }
   }
@@ -98,39 +44,9 @@ export default class Collapsed extends Component {
   handleSearchClick = () => {
     if (this.state.query && this.state.query.text.match(/[^\s]+/)) {
       this.props.onQueryChange({
-        text: this.state.query.text,
-        date: {
-          from: this.state.startDate.format('YYYYMMDD'),
-          to: this.state.endDate.format('YYYYMMDD'),
-        },
-        restrictedDateRange: this.state.restrictedDateRange,
+        text: "&natural_language_query=" + this.state.query.text.replace(" ", "%")
       });
     }
-  }
-
-  dateButtonChanged = (e) => {
-    let newDates = {};
-    const largestValue = 'lasttwomonths';
-    let restrictedDateRange;
-    const newButtonState = this.state.dateButtons.map((item) => {
-      const newItem = Object.assign({}, item, {
-        selected: item.value === e.target.value,
-      });
-      if (newItem.selected) {
-        newDates = {
-          startDate: newItem.startDate,
-          endDate: newItem.endDate,
-        };
-        restrictedDateRange = newItem.value !== largestValue;
-      }
-      return newItem;
-    });
-    this.setState({
-      restrictedDateRange,
-      dateButtons: newButtonState,
-      startDate: newDates.startDate,
-      endDate: newDates.endDate,
-    }, this.onDatesChange);
   }
 
   render() {
@@ -144,7 +60,7 @@ export default class Collapsed extends Component {
                   onInput={this.handleInputChange}
                   onKeyPress={this.handleKeyPress}
                   defaultValue={this.state.query.text || ''}
-                  placeholder="What company are you interested in?"
+                  placeholder="What would you like to read about?"
                 />
                 <button
                   type="button"
@@ -154,14 +70,6 @@ export default class Collapsed extends Component {
                   <Icon type="search" size="regular" fill="#ffffff" />
                 </button>
               </div>
-            </div>
-            <div className={this.buttonState()}>
-              <ButtonsGroup
-                type="radio"
-                name="radio-buttons"
-                onChange={this.dateButtonChanged}
-                buttons={this.state.dateButtons}
-              />
             </div>
           </div>
         </div>

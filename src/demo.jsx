@@ -17,48 +17,55 @@ const parseQueryResults = (data) => {
   const parsedData = {
     results: data.results, // Top Results
     entities: {}, // Topic cloud
-    sentiments: null, // Sentiment by source
-    sentiment: null, // Overall sentiment
+    sentiments: [], // Sentiment by source
+    sentiment: [], // Overall sentiment
     mentions: null, // Mentions and Sentiments
     anomalyData: null, // Anomaly data
   };
 
+  data.results.forEach((result) => {
+    let title = result.extracted_metadata.title;
+    let sentiment_label = result.enriched_text.sentiment.document.label;
+    let sentiment_score = result.enriched_text.sentiment.document.score;
+    parsedData.sentiments.push({title: title, sentiment_label: sentiment_label, sentiment_score: sentiment_score});
+  });
+
   data.aggregations.forEach((aggregation) => {
     // sentiments by source
-    if (aggregation.type === 'term' && aggregation.field === fields.host) {
-      parsedData.sentiments = aggregation;
-    }
+    // if (aggregation.type === 'term' && aggregation.field === fields.host) {
+    //   parsedData.sentiments = aggregation;
+    // }
     // Overall sentiment
     if (aggregation.type === 'term' && aggregation.field === fields.text_document_sentiment_type) {
       parsedData.sentiment = aggregation;
     }
 
-    if (aggregation.type === 'term' && aggregation.field === fields.title_concept_text) {
-      parsedData.entities.topics = aggregation.results;
-    }
+    // if (aggregation.type === 'term' && aggregation.field === fields.title_concept_text) {
+    //   parsedData.entities.topics = aggregation.results;
+    // }
 
-    // Mentions and sentiments
-    if (aggregation.type === 'filter' &&
-      'aggregations' in aggregation &&
-      aggregation.aggregations[0].field === fields.title_entity_text) {
-      parsedData.mentions = aggregation;
-    }
+    // // Mentions and sentiments
+    // if (aggregation.type === 'filter' &&
+    //   'aggregations' in aggregation &&
+    //   aggregation.aggregations[0].field === fields.title_entity_text) {
+    //   parsedData.mentions = aggregation;
+    // }
 
-    if (aggregation.type === 'nested' && aggregation.path === fields.title_entity) {
-      const entities = aggregation.aggregations;
-      if (entities && entities.length > 0 && hasResults(entities[0])) {
-        if (entities[0].match === `${fields.title_entity_type}:Company`) {
-          parsedData.entities.companies = entities[0].aggregations[0].results;
-        }
-        if (entities[0].match === `${fields.title_entity_type}:Person`) {
-          parsedData.entities.people = entities[0].aggregations[0].results;
-        }
-      }
-    }
+    // if (aggregation.type === 'nested' && aggregation.path === fields.title_entity) {
+    //   const entities = aggregation.aggregations;
+    //   if (entities && entities.length > 0 && hasResults(entities[0])) {
+    //     if (entities[0].match === `${fields.title_entity_type}:Company`) {
+    //       parsedData.entities.companies = entities[0].aggregations[0].results;
+    //     }
+    //     if (entities[0].match === `${fields.title_entity_type}:Person`) {
+    //       parsedData.entities.people = entities[0].aggregations[0].results;
+    //     }
+    //   }
+    // }
 
-    if (aggregation.type === 'timeslice' && aggregation.anomaly) {
-      parsedData.anomalyData = aggregation.results;
-    }
+    // if (aggregation.type === 'timeslice' && aggregation.anomaly) {
+    //   parsedData.anomalyData = aggregation.results;
+    // }
   });
 
   return parsedData;
@@ -79,30 +86,35 @@ export default class Demo extends Component {
    * Call the query API every time the query change.
    */
   fetchNewData = (query) => {
+    console.log(query);
     this.setState({ query, loading: true, error: null, data: null });
-    const host = process.env.REACT_APP_SERVER || '';
-    fetch(`${host}/api/query`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(query),
-    }).then((response) => {
-      if (response.ok) {
-        response.json().then((json) => {
-          this.setState({ loading: false, data: parseQueryResults(json) });
-        });
-      } else {
-        response.json().then((error) => {
-          this.setState({ error, loading: false });
-        }).catch(() => {
-          this.setState({
-            error: {
-              error: 'There was a problem with the request, please try again',
-            },
-            loading: false,
-          });
-        });
+    var xmlhttp = null;
+    var response = null;
+    var responseThis = this;
+    if (window.XMLHttpRequest)
+    {// code for IE7+, Firefox, Chrome, Opera, Safari
+        xmlhttp=new XMLHttpRequest();
+    }
+
+    var baseUrl = "https://gateway.watsonplatform.net/discovery/api/v1/environments/2d733f0f-ffcd-4b29-ac16-41f677a0732d/collections/ce6bb4be-278f-49c8-9927-0c5dfb530b6e/query?version=2017-11-07";
+    var url = baseUrl + query.text + "&count=5" + "&aggregation=term%28enriched_text.sentiment.document.label%2Ccount%3A5%29";
+    console.log(url);
+
+    xmlhttp.onreadystatechange=function()
+    {
+      if (xmlhttp.readyState===4 && xmlhttp.status===200)
+      {
+        response = JSON.parse(xmlhttp.responseText);
+        console.log(response);
+        responseThis.setState({ loading: false, data: parseQueryResults(response) });
       }
-    });
+    }
+
+    xmlhttp.open("GET", url, true, "15806e2f-d3c0-4bab-8637-142a21ddf8e8", "DPvn4KmxC1RO");
+    xmlhttp.setRequestHeader("Content-type", "application/json");
+    xmlhttp.withCredentials = true;
+    xmlhttp.send();   
+
     // scroll to the loading bar
     window.scrollTo(100, 344);
   }
@@ -149,34 +161,13 @@ export default class Demo extends Component {
                         onShowCode={this.toggleTopResults}
                       />
                     </div>
-                    <div className="results--panel-2">
-                      <TopEntities
-                        query={this.state.query}
-                        entities={this.state.data.entities}
-                        onShowCode={this.toggleTopEntities}
-                      />
-                    </div>
                   </div>
                   <div className="row">
                     <div className="results--panel-3">
                       <SentimentAnalysis
                         query={this.state.query}
-                        sentiment={this.state.data.sentiment}
                         sentiments={this.state.data.sentiments}
-                      />
-                    </div>
-                  </div>
-                  <div className="row">
-                    <AnomalyDetection
-                      query={this.state.query}
-                      anomalyData={this.state.data.anomalyData}
-                    />
-                  </div>
-                  <div className="row">
-                    <div className="results--panel-4">
-                      <MentionsAndSentiments
-                        query={this.state.query}
-                        mentions={this.state.data.mentions}
+                        sentiment={this.state.data.sentiment}
                       />
                     </div>
                   </div>

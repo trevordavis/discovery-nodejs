@@ -16,24 +16,22 @@ export default class QueryExpanded extends Component {
   handleInputChange = (event) => {
     this.setState({
       query: {
-        text: event.target.value,
-        date: {
-          from: moment().subtract(2, 'months').format('YYYYMMDD'),
-          to: moment().format('YYYYMMDD'),
-        },
+        text: event.target.value
       },
     });
   }
 
   handleKeyPress = (event) => {
+    console.log(this.state.query);
     if (event.key === 'Enter' && event.target.value.match(/[^\s]+/)) {
-      this.props.onQueryChange(this.state.query);
+      this.props.onQueryChange({text: "&natural_language_query=" + this.state.query.text.replace(" ", "%")});
     }
   }
 
   handleSearchClick = () => {
+    console.log(this.state.query);
     if (this.state.query && this.state.query.text.match(/[^\s]+/)) {
-      this.props.onQueryChange(this.state.query);
+      this.props.onQueryChange({text: "&natural_language_query=" + this.state.query.text.replace(" ", "%")});
     }
   }
 
@@ -44,7 +42,7 @@ export default class QueryExpanded extends Component {
           <div className="query--left">
             <div className="query--search-container">
               <TextInput
-                placeholder="What company are you interested in?"
+                placeholder="What would you like to read about?"
                 onKeyPress={this.handleKeyPress}
                 onInput={this.handleInputChange}
                 defaultValue={this.state.query ? this.state.query.text : null}
@@ -60,18 +58,16 @@ export default class QueryExpanded extends Component {
           </div>
           <div className="query--right">
             <p className="base--p query--query-description">
-              Quickly find insights in the Watson Discovery News data collection
-              of recent news articles. Easily explore a company&apos;s:
+              Quickly find great reads in the Watson Book Catalogue data collection
+              of top rated books from Project Gutenberg. Easily filter your results by:
             </p>
             <ul className="base--ul query--query-list">
-              <li className="base--li query--query-list-item">Top stories over the last two months</li>
-              <li className="base--li query--query-list-item">Top entities (people, topics, companies) mentioned in those articles</li>
-              <li className="base--li query--query-list-item">Trend of public sentiment in news</li>
-              <li className="base--li query--query-list-item">Anomalous periods of high press coverage</li>
-              <li className="base--li query--query-list-item">Trend of most commonly paired entities (co-mentions)</li>
+              <li className="base--li query--query-list-item">Books about the content that interests you</li>
+              <li className="base--li query--query-list-item">Common entities (people and locations) mentioned in those books</li>
+              <li className="base--li query--query-list-item">Trend of sentiments in your Project Gutenberg results, with other book sites coming soon!</li>
             </ul>
             <p className="base--p query--query-description">
-              Watson Discovery also lets you do the same analysis with your own data. Learn more <a href="https://ibm.biz/WatsonDiscovery">here</a>.
+              Project Gutenberg has a lot more to offer. Check it out <a href="http://www.gutenberg.org">here</a>.
             </p>
           </div>
         </div>

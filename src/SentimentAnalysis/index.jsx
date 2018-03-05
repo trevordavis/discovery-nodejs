@@ -8,12 +8,11 @@ import queryBuilder from '../query-builder';
 
 export default class SentimentAnalysis extends Component {
   static propTypes = {
-    sentiment: shape({
-      results: arrayOf(shape({
-        key: string.isRequired,
-        matching_results: number.isRequired,
-      })).isRequired,
-    }).isRequired,
+    sentiment: arrayOf(shape({
+      title: string.isRequired,
+      sentiment_label: string.isRequired,
+      sentiment_score: string.isRequired
+    })).isRequired,
     sentiments: shape({
       results: arrayOf(shape({
         key: string.isRequired,
@@ -25,11 +24,7 @@ export default class SentimentAnalysis extends Component {
       })).isRequired,
     }).isRequired,
     query: shape({
-      text: string.isRequired,
-      date: shape({
-        from: string.isRequired,
-        to: string.isRequired,
-      }).isRequired,
+      text: string.isRequired
     }).isRequired,
   }
 
@@ -59,6 +54,8 @@ export default class SentimentAnalysis extends Component {
 
   render() {
     const { sentiment, sentiments, query } = this.props;
+    console.log('printing sentiments');
+    console.log(sentiment);
 
     return (
       <div>
@@ -77,9 +74,7 @@ export default class SentimentAnalysis extends Component {
                   size="large"
                 />
                 <SentimentBySource
-                  sentiments={
-                    SentimentAnalysis.filterEmptySentimentResults(sentiments)
-                  }
+                  sentiments={ sentiments }
                 />
               </div>
             )
