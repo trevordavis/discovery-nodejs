@@ -2,72 +2,58 @@ import React, { Component } from 'react';
 import { Icon, Alert } from 'watson-react-components';
 import { fields } from './fields';
 import Query from './Query/index';
-import TopEntities from './TopEntities/index';
-import TopStories from './TopStories/index';
-import AnomalyDetection from './AnomalyDetection/index';
+import TopPassages from './TopPassages/index';
+import TopBooks from './TopBooks/index';
 import SentimentAnalysis from './SentimentAnalysis/index';
-import MentionsAndSentiments from './MentionsAndSentiments/index';
 import NoResults from './NoResults/index';
-
-const hasResults = entities =>
-  entities.aggregations && entities.aggregations.length > 0 &&
-  entities.aggregations[0].field === fields.title_entity_text;
 
 const parseQueryResults = (data) => {
   const parsedData = {
     results: data.results, // Top Results
-    entities: {}, // Topic cloud
+    passages: data.passages,
+    parsablePassages: data.passages,
+    passageData: [],
     sentiments: [], // Sentiment by source
-    sentiment: [], // Overall sentiment
-    mentions: null, // Mentions and Sentiments
-    anomalyData: null, // Anomaly data
+    sentiment: [] // Overall sentiment
   };
 
-  data.results.forEach((result) => {
+
+  parsedData.results.forEach((result) => {
+
+    // set variables
+    let id = result.id;
     let title = result.extracted_metadata.title;
     let sentiment_label = result.enriched_text.sentiment.document.label;
     let sentiment_score = result.enriched_text.sentiment.document.score;
+
+    // sentiments by book title
     parsedData.sentiments.push({title: title, sentiment_label: sentiment_label, sentiment_score: sentiment_score});
+    
+    // to extract top passages later
+    parsedData.passageData.push({id: id, title: title, text: null});
+  });
+
+  parsedData.parsablePassages.forEach((passage) => {
+    // set variables
+    let id = passage.document_id;
+
+    // avoid using html field of returned passages
+    if (passage.field === "text") { 
+      let i;
+      for (i= 0; i < parsedData.passageData.length; i++) {
+        if (id === parsedData.passageData[i].id) { // only return passages from the top book results
+          parsedData.passageData[i].text = passage.passage_text;
+        }
+      }
+    }
   });
 
   data.aggregations.forEach((aggregation) => {
-    // sentiments by source
-    // if (aggregation.type === 'term' && aggregation.field === fields.host) {
-    //   parsedData.sentiments = aggregation;
-    // }
     // Overall sentiment
     if (aggregation.type === 'term' && aggregation.field === fields.text_document_sentiment_type) {
       parsedData.sentiment = aggregation;
     }
-
-    // if (aggregation.type === 'term' && aggregation.field === fields.title_concept_text) {
-    //   parsedData.entities.topics = aggregation.results;
-    // }
-
-    // // Mentions and sentiments
-    // if (aggregation.type === 'filter' &&
-    //   'aggregations' in aggregation &&
-    //   aggregation.aggregations[0].field === fields.title_entity_text) {
-    //   parsedData.mentions = aggregation;
-    // }
-
-    // if (aggregation.type === 'nested' && aggregation.path === fields.title_entity) {
-    //   const entities = aggregation.aggregations;
-    //   if (entities && entities.length > 0 && hasResults(entities[0])) {
-    //     if (entities[0].match === `${fields.title_entity_type}:Company`) {
-    //       parsedData.entities.companies = entities[0].aggregations[0].results;
-    //     }
-    //     if (entities[0].match === `${fields.title_entity_type}:Person`) {
-    //       parsedData.entities.people = entities[0].aggregations[0].results;
-    //     }
-    //   }
-    // }
-
-    // if (aggregation.type === 'timeslice' && aggregation.anomaly) {
-    //   parsedData.anomalyData = aggregation.results;
-    // }
   });
-
   return parsedData;
 };
 
@@ -86,30 +72,44 @@ export default class Demo extends Component {
    * Call the query API every time the query change.
    */
   fetchNewData = (query) => {
-    console.log(query);
     this.setState({ query, loading: true, error: null, data: null });
+
+    // set variables
     var xmlhttp = null;
     var response = null;
-    var responseThis = this;
+    var responseThis = this; // used for binding this to XMLHttpRequest's module
+
     if (window.XMLHttpRequest)
     {// code for IE7+, Firefox, Chrome, Opera, Safari
         xmlhttp=new XMLHttpRequest();
     }
 
-    var baseUrl = "https://gateway.watsonplatform.net/discovery/api/v1/environments/2d733f0f-ffcd-4b29-ac16-41f677a0732d/collections/ce6bb4be-278f-49c8-9927-0c5dfb530b6e/query?version=2017-11-07";
-    var url = baseUrl + query.text + "&count=5" + "&aggregation=term%28enriched_text.sentiment.document.label%2Ccount%3A5%29";
-    console.log(url);
+    // use natural language query with the Watson Discovery API
+    var text = "&natural_language_query=" + query.text.replace(" ", "%");
 
+    // only include emotion filter if/when the user selects a specific emotion
+    var emotion;
+    if (query.emotion !== 'none') {
+      emotion = "&filter=enriched_text.emotion.document.emotion." + query.emotion + "%3E%3D0.5";
+    } else {
+      emotion = "";
+    }
+
+    // construct url based on the natural language query, the selected emotion, and several hard-coded paramters such as aggregations
+    var baseUrl = "https://gateway.watsonplatform.net/discovery/api/v1/environments/2d733f0f-ffcd-4b29-ac16-41f677a0732d/collections/ce6bb4be-278f-49c8-9927-0c5dfb530b6e/query?version=2017-11-07";
+    var url = baseUrl + text + "&count=5&aggregation=term%28enriched_text.sentiment.document.label%2Ccount%3A5%29&passages=true&passages.count=100" + emotion;
+
+    // once the request state has changed, handle the response
     xmlhttp.onreadystatechange=function()
     {
       if (xmlhttp.readyState===4 && xmlhttp.status===200)
       {
         response = JSON.parse(xmlhttp.responseText);
-        console.log(response);
         responseThis.setState({ loading: false, data: parseQueryResults(response) });
       }
     }
 
+    // set the XMLHttpRequest parameters and initiate the request
     xmlhttp.open("GET", url, true, "15806e2f-d3c0-4bab-8637-142a21ddf8e8", "DPvn4KmxC1RO");
     xmlhttp.setRequestHeader("Content-type", "application/json");
     xmlhttp.withCredentials = true;
@@ -155,10 +155,16 @@ export default class Demo extends Component {
                 <div className="_container _container_large">
                   <div className="row">
                     <div className="results--panel-1">
-                      <TopStories
+                      <TopBooks
                         query={this.state.query}
-                        stories={this.state.data.results}
+                        books={this.state.data.results}
                         onShowCode={this.toggleTopResults}
+                      />
+                    </div>
+                    <div className="results--panel-2">
+                      <TopPassages
+                        passages={this.state.data.passageData}
+                        onShowCode={this.toggleTopEntities}
                       />
                     </div>
                   </div>

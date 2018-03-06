@@ -1,6 +1,5 @@
 import React from 'react';
-import { string, shape, arrayOf } from 'prop-types';
-import SentimentChart from './SentimentChart';
+import { string, number, shape, arrayOf } from 'prop-types';
 
 function SentimentBySource({ sentiments }) {
   return (
@@ -33,7 +32,7 @@ SentimentBySource.propTypes = {
   sentiments: arrayOf(shape({
     title: string.isRequired,
     label: string.isRequired,
-    score: string.isRequired
+    score: number.isRequired
   })).isRequired,
 };
 

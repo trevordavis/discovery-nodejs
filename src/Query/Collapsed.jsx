@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { string, bool, shape, func } from 'prop-types';
-import moment from 'moment';
 import { TextInput, Icon, ButtonsGroup } from 'watson-react-components';
 
 export default class Collapsed extends Component {
@@ -8,10 +7,7 @@ export default class Collapsed extends Component {
     onQueryChange: func.isRequired,
     query: shape({
       text: string,
-      date: shape({
-        from: string,
-        to: string,
-      }),
+      emotion: string,
       enabled: bool,
     }).isRequired,
   }
@@ -21,6 +17,52 @@ export default class Collapsed extends Component {
       enabled: this.props.query.text.length > 0,
     })
   }
+
+  state = {
+    emotion: null,
+    query: Object.assign({}, this.props.query, {
+      enabled: this.props.query.text.length > 0,
+    }),
+    emotionButtons: [
+      {
+        value: 'none',
+        id: 'rb-0',
+        text: 'No Filter',
+        selected: true
+      },
+      {
+        value: 'joy',
+        id: 'rb-1',
+        text: 'Joy'
+      },
+      {
+        value: 'anger',
+        id: 'rb-2',
+        text: 'Anger'
+      },
+      {
+        value: 'fear',
+        id: 'rb-3',
+        text: 'Fear'
+      },
+      {
+        value: 'sadness',
+        id: 'rb-4',
+        text: 'Sadness'
+      },
+    ],
+  }
+
+  onEmotionChange = () => {
+    this.props.onQueryChange({
+      text: this.state.query.text,
+      emotion: this.state.emotion
+    });
+  }
+
+  buttonState = () => (this.state.query.enabled ?
+    ('query--date-buttons-container') :
+    ('query--date-buttons-disabled query--date-buttons-container'))
 
   handleInputChange = (event) => {
     const value = event.target.value;
@@ -36,7 +78,8 @@ export default class Collapsed extends Component {
   handleKeyPress = (event) => {
     if (event.key === 'Enter' && event.target.value.match(/[^\s]+/)) {
       this.props.onQueryChange({
-        text: "&natural_language_query=" + this.state.query.text.replace(" ", "%")
+        text: this.state.query.text,
+        emotion: this.state.emotion
       });
     }
   }
@@ -44,9 +87,27 @@ export default class Collapsed extends Component {
   handleSearchClick = () => {
     if (this.state.query && this.state.query.text.match(/[^\s]+/)) {
       this.props.onQueryChange({
-        text: "&natural_language_query=" + this.state.query.text.replace(" ", "%")
+        text: this.state.query.text,
+        emotion: this.state.emotion
       });
     }
+  }
+
+  emotionButtonChanged = (e) => {
+    let newEmotion;
+    const newButtonState = this.state.emotionButtons.map((item) => {
+      const newItem = Object.assign({}, item, {
+        selected: item.value === e.target.value,
+      });
+      if (newItem.selected) {
+        newEmotion = newItem.value;
+      }
+      return newItem;
+    });
+    this.setState({
+      emotion: newEmotion,
+      emotionButtons: newButtonState
+    }, this.onEmotionChange);
   }
 
   render() {
@@ -70,6 +131,14 @@ export default class Collapsed extends Component {
                   <Icon type="search" size="regular" fill="#ffffff" />
                 </button>
               </div>
+            </div>
+            <div className={this.buttonState()}>
+              <ButtonsGroup
+                type="radio"
+                name="radio-buttons"
+                onChange={this.emotionButtonChanged}
+                buttons={this.state.emotionButtons}
+              />
             </div>
           </div>
         </div>

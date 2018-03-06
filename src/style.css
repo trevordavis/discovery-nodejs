@@ -14,6 +14,10 @@ html {
   }
 }
 
+.jumbotron--nav {
+  display: none;
+}
+
 .base--h4 {
   text-transform: none;
   font-size: 1rem;
@@ -1004,7 +1008,7 @@ html {
     width: 32rem !important;
   }
   .query--text-input-container {
-    width: 98.93617%;
+    width: 48.93617%;
     margin-right: 2.12766%;
     float: left;
   }
@@ -1833,7 +1837,7 @@ input:focus, button:focus, textarea:focus {
   align-items: flex-end;
 }
 .query--flex-container .query--text-input-container {
-  width: 90%;
+  width: 40%;
 }
 
 .query--flex-container .query--date-buttons-container {

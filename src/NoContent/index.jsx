@@ -1,5 +1,5 @@
 import React from 'react';
-import { string, bool, shape } from 'prop-types';
+import { string } from 'prop-types';
 import { Icon } from 'watson-react-components';
 
 function NoContent({ message, query }) {
@@ -12,26 +12,12 @@ function NoContent({ message, query }) {
         <p className="no-content--set-message">
           { message }
         </p>
-        <p className="no-content--recommendations">
-          {
-            query.restrictedDateRange
-              ? (
-                'Try expanding the timeframe.'
-              )
-              : (
-                'Try modifying your query.'
-              )
-          }
-        </p>
       </div>
     </div>
   );
 }
 
 NoContent.propTypes = {
-  query: shape({
-    restrictedDateRange: bool,
-  }).isRequired,
   message: string.isRequired,
 };
 

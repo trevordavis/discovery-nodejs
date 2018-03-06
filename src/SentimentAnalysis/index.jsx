@@ -11,7 +11,7 @@ export default class SentimentAnalysis extends Component {
     sentiment: arrayOf(shape({
       title: string.isRequired,
       sentiment_label: string.isRequired,
-      sentiment_score: string.isRequired
+      sentiment_score: number.isRequired
     })).isRequired,
     sentiments: shape({
       results: arrayOf(shape({
@@ -54,8 +54,6 @@ export default class SentimentAnalysis extends Component {
 
   render() {
     const { sentiment, sentiments, query } = this.props;
-    console.log('printing sentiments');
-    console.log(sentiment);
 
     return (
       <div>

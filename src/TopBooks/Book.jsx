@@ -1,5 +1,4 @@
 import React from 'react';
-import moment from 'moment';
 import { string, number } from 'prop-types';
 
 function Story({ title, author, score, url }) {
@@ -29,7 +28,7 @@ function Story({ title, author, score, url }) {
 Story.propTypes = {
   title: string.isRequired,
   author: string.isRequired,
-  score: string.isRequired,
+  score: number.isRequired,
   url: string.isRequired
 };
 

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { func } from 'prop-types';
-import moment from 'moment';
 
 import { TextInput, Icon } from 'watson-react-components';
 
@@ -16,22 +15,21 @@ export default class QueryExpanded extends Component {
   handleInputChange = (event) => {
     this.setState({
       query: {
-        text: event.target.value
+        text: event.target.value,
+        emotion: 'none'
       },
     });
   }
 
   handleKeyPress = (event) => {
-    console.log(this.state.query);
     if (event.key === 'Enter' && event.target.value.match(/[^\s]+/)) {
-      this.props.onQueryChange({text: "&natural_language_query=" + this.state.query.text.replace(" ", "%")});
+      this.props.onQueryChange(this.state.query);
     }
   }
 
   handleSearchClick = () => {
-    console.log(this.state.query);
     if (this.state.query && this.state.query.text.match(/[^\s]+/)) {
-      this.props.onQueryChange({text: "&natural_language_query=" + this.state.query.text.replace(" ", "%")});
+      this.props.onQueryChange(this.state.query);
     }
   }
 
